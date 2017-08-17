@@ -1,34 +1,44 @@
-const { csvFormat } = require('d3-dsv')
 const Nightmare = require('nightmare')
-const { readFileSync, writeFileSync } = require('fs')
-//var cheerio = require('cheerio')
-// const numbers = readFileSync('./tesco-title-numbers.csv',
-//   {encoding: 'utf8'}).trim().split('\n')
-const cpf = '044.698.029-30'
-      //data = '04/09/1979'
 
-const START = 'https://www.example.com.br'
+const cpf = '054.398.309-95'
+const userAgents = [
+  'GoogleBot', 'googbot', 'Google',
+  'user', 'normal', 'simple',
+  'life', 'notbot', 'oxes',
+  '008', 'Arachmo', 'Baiduspider',
+  'Cerberian Drtrs', 'Charlotte',
+  'FindLinks', 'Holmes', 'htdig',
+  'ia_archiver', 'ichiro'
+]
+
+const START = 'https://www.situacaocadastral.com.br'
+
+function randomAgent() {
+  var item = userAgents[Math.floor(Math.random() * userAngents.length)]
+  console.log(item)
+  return item
+}
 
 const getAddress = async id => {
   console.log(`Now checking ${id}`)
   const nightmare = new Nightmare({
-    show: true,
+    typeInterval: 20,
+    show: false,
     switches: {
       'proxy-server': 'proxy.unipam.edu.br:3128' // set the proxy server here ...
     },
     waitTimeout: 10000
   })
-// Go to initial start page, navigate to Detail search
 
   try {
     await nightmare
-      .authentication('aaaa', 'aaa')
-      //.clearCache()
+      .authentication('a12027962', '32900596')
       .cookies.clearAll()
-      .goto(START, [{'user-agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36 OPR/46.0.2597.57'}])
+      .goto(START)
+      .useragent(randomAgent())
       .wait('#topo')
       .click('#topo')
-  } catch(e) {
+  } catch (e) {
     console.error(e)
   }
 
@@ -37,7 +47,7 @@ const getAddress = async id => {
       .wait('input[name="doc"]')
       .type('input[name="doc"]', id)
       .click('input[value="L"]')
-  } catch(e) {
+  } catch (e) {
     console.error(e)
   }
 
@@ -45,14 +55,16 @@ const getAddress = async id => {
     const result = await nightmare
       .wait('#resultado')
       .evaluate(() => {
-        return [...document.querySelectorAll('#resultado')]
+        return [...document.querySelectorAll('.dados')]
           .map(el => el.innerText)
       })
       .end()
-    return { id, address: result[0], lease: result[1] }
-    // console.log(json.address)
-    // return json
-  } catch(e) {
+    return {
+      id: id,
+      nome: result[0],
+      situacao: result[1]
+    }
+  } catch (e) {
     console.error(e)
     return undefined
   }
@@ -63,8 +75,8 @@ getAddress(cpf)
   .catch(e => console.error(e))
 
 /**
-  * Salvar resultados em planilha
-  */
+ * Salvar resultados em planilha
+ */
 // const series = cpf.reduce(async (queue, cpf) => {
 //   const dataArray = await queue
 //   dataArray.push(await getAddress(cpf))
@@ -77,4 +89,4 @@ getAddress(cpf)
 //   //writeFileSync('./output.csv', csvData, { encoding: 'utf8' })
 //   console.log()
 // })
-.catch(e => console.error(e))
+// .catch(e => console.error(e))
