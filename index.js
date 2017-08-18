@@ -3,7 +3,10 @@ const Nightmare = require('nightmare')
 const cpf = '054.398.309-95'
 const userAgents = [
   'GoogleBot', 'googbot', 'Google',
-  'user', 'normal', 'simple',
+  'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html',
+  'Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)',
+  'Mozilla/5.0 (compatible; Yahoo! Slurp; http://help.yahoo.com/help/us/ysearch/slurp)',
+  'normal', 'simple',
   'life', 'notbot', 'oxes',
   '008', 'Arachmo', 'Baiduspider',
   'Cerberian Drtrs', 'Charlotte',
@@ -14,7 +17,7 @@ const userAgents = [
 const START = 'https://www.situacaocadastral.com.br'
 
 function randomAgent() {
-  var item = userAgents[Math.floor(Math.random() * userAngents.length)]
+  var item = userAgents[Math.floor(Math.random() * userAgents.length)]
   console.log(item)
   return item
 }
@@ -23,17 +26,18 @@ const getAddress = async id => {
   console.log(`Now checking ${id}`)
   const nightmare = new Nightmare({
     typeInterval: 20,
-    show: false,
+    //show: true,
     switches: {
       'proxy-server': 'proxy.unipam.edu.br:3128' // set the proxy server here ...
     },
-    waitTimeout: 10000
+    //waitTimeout: 10000
   })
 
   try {
     await nightmare
       .authentication('a12027962', '32900596')
       .cookies.clearAll()
+      .wait(3000)
       .goto(START)
       .useragent(randomAgent())
       .wait('#topo')
@@ -46,6 +50,7 @@ const getAddress = async id => {
     await nightmare
       .wait('input[name="doc"]')
       .type('input[name="doc"]', id)
+      .wait(5000)
       .click('input[value="L"]')
   } catch (e) {
     console.error(e)
@@ -73,20 +78,3 @@ const getAddress = async id => {
 getAddress(cpf)
   .then(a => console.dir(a))
   .catch(e => console.error(e))
-
-/**
- * Salvar resultados em planilha
- */
-// const series = cpf.reduce(async (queue, cpf) => {
-//   const dataArray = await queue
-//   dataArray.push(await getAddress(cpf))
-//   console.log(dataArray)
-//   return dataArray
-// }, Promise.resolve([]))
-
-// series.then(data => {
-//   const csvData = csvFormat(data.filter(i => i))
-//   //writeFileSync('./output.csv', csvData, { encoding: 'utf8' })
-//   console.log()
-// })
-// .catch(e => console.error(e))
